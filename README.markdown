@@ -42,3 +42,11 @@ For convenience, you will probably want to map them to a toolbar button, context
 7. Select ShowFile, in the shortcut keys input, press CTRL+L, CTRL+F
 8. Select ShowBlame, in the shortcut keys input, press CTRL+L, CTRL+B
 9. Press OK and Closet to close the dialogs.
+
+
+Known Issues
+------------
+
+1. The macros jump to the wrong github fork
+
+    The macros try to figure out the correct GitHub web URL by reading your configured remotes. It will use the first remote it finds that refers to github.com. If you have multiple remotes for GitHub forks of your repository, and the macros bring you to the wrong page, you will need to manually edit your .git\config file and move the remote definitions so that your desired remote is listed first.
