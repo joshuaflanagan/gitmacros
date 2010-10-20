@@ -12,6 +12,7 @@ Macros
 * ShowFile - open the GitHub page for the current file
 * ShowBlame - open the GitHub blame page for the current file
 * ShowLog - open the GitHub commit history page for the current file
+* ShowIssue - open the GitHub Issues page for a provided issue number
 
 Installation
 ------------

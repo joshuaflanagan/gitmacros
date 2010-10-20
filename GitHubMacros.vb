@@ -27,13 +27,30 @@ Public Module GitHubMacros
         showOnGitHub("blame")
     End Sub
 
+    'Show details for a provided Issue number
+    Sub ShowIssue()
+        Dim gitRoot As String = findGitRepoRoot(DTE.ActiveDocument.FullName)
+        If gitRoot Is Nothing Then
+            MsgBox("Not a git repository")
+            Return
+        End If
+
+        Dim issueNumber As String
+        issueNumber = InputBox("Issue number" & vbCrLf & "(leave empty to see all issues)", "Show GitHub Issue")
+        Dim githubRootPath As String = findBaseGitHubUrlForLocalRepo(gitRoot)
+
+        Dim githubFilePath As String
+        Dim issuePart As String = If(issueNumber = "", String.Empty, "#issue/" + issueNumber)
+        githubFilePath = String.Format("{0}/issues{1}", githubRootPath, issuePart)
+        System.Diagnostics.Process.Start(githubFilePath)
+
+    End Sub
 
 
     Private Sub showOnGitHub(ByVal page As String)
         Dim filePath As String
         Dim gitRoot As String
         Dim relativePath As String
-        Dim githubRootPath As String
         Dim githubFileUrl As String
 
         Dim ActiveDoc As Document = DTE.ActiveDocument
@@ -44,26 +61,34 @@ Public Module GitHubMacros
             MsgBox("Not a git repository")
             Return
         End If
-        relativePath = filePath.Substring(gitRoot.Length + 1).Replace("\", "/")
 
-        Dim repo = New GitRepo(gitRoot)
-        Dim gitHubRemote = (From r In repo.GetRemotes() Where r.Url.Contains("github.com")).FirstOrDefault()
-        If gitHubRemote Is Nothing Then
-            MsgBox("No github remote found")
-            Return
-        End If
-
-        githubRootPath = buildGitHubBaseUrl(gitHubRemote.Url)
-        If githubRootPath Is Nothing Then
-            MsgBox("Unrecognized github repository url format: " + gitHubRemote.Url)
-            Return
-        End If
+        Dim githubRootPath As String = findBaseGitHubUrlForLocalRepo(gitRoot)
 
         Dim branchName As String = "master" 'TODO: discover this
+        relativePath = filePath.Substring(gitRoot.Length + 1).Replace("\", "/")
         githubFileUrl = String.Format("{0}/{1}/{2}/{3}", githubRootPath, page, branchName, relativePath)
 
         System.Diagnostics.Process.Start(githubFileUrl)
     End Sub
+
+    Private Function findBaseGitHubUrlForLocalRepo(ByVal gitRoot As String)
+        Dim githubRootPath As String
+
+        Dim repo = New GitRepo(gitRoot)
+        Dim remotes As String = ""
+        Dim gitHubRemote = (From r In repo.GetRemotes() Where r.Url.Contains("github.com")).FirstOrDefault()
+        If gitHubRemote Is Nothing Then
+            MsgBox("No github remote found")
+            Return Nothing
+        End If
+        githubRootPath = buildGitHubBaseUrl(gitHubRemote.Url)
+        If githubRootPath Is Nothing Then
+            MsgBox("Unrecognized github repository url format: " + gitHubRemote.Url)
+            Return Nothing
+        End If
+        Return githubRootPath
+    End Function
+
 
     Private Function findGitRepoRoot(ByVal filePath As String)
         Dim currentDirectory As String = filePath
