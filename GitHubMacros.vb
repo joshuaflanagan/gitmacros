@@ -133,7 +133,7 @@ Public Class GitRepo
         Dim match As Match
         Dim parts As String()
         Dim currentSection As ConfigSection
-        Const pattern = "^\[(?<kind>\w+)(\s+""(?<name>\w+)"")?\]"
+        Const pattern = "^\[(?<kind>[a-zA-Z_0-9\-\.]+)(\s+""(?<name>[a-zA-Z_0-9\-\.]+)"")?\]"
         For Each line In File.ReadLines(Path.Combine(repoFolder, "config"))
             match = System.Text.RegularExpressions.Regex.Match(line, pattern)
             If (match.Success) Then
