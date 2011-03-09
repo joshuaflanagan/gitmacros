@@ -24,7 +24,7 @@ Public Module GitHubMacros
 
     'Show the line by line history of the file on GitHub
     Sub ShowBlame()
-        showOnGitHub("blame")
+        showOnGitHub("blame", True)
     End Sub
 
     'Show details for a provided Issue number
@@ -47,7 +47,7 @@ Public Module GitHubMacros
     End Sub
 
 
-    Private Sub showOnGitHub(ByVal page As String)
+    Private Sub showOnGitHub(ByVal page As String, Optional ByVal goToLineNumber As Boolean = False)
         Dim filePath As String
         Dim gitRoot As String
         Dim relativePath As String
@@ -67,6 +67,14 @@ Public Module GitHubMacros
         Dim branchName As String = "master" 'TODO: discover this
         relativePath = filePath.Substring(gitRoot.Length + 1).Replace("\", "/")
         githubFileUrl = String.Format("{0}/{1}/{2}/{3}", githubRootPath, page, branchName, relativePath)
+
+        ' add anchor (for the current line number) to the GitHub URL
+        If goToLineNumber Then
+            Dim lineNumber As Integer? = GetCurrentLineNumber()
+            If lineNumber.HasValue Then
+                githubFileUrl &= "#LID" & lineNumber
+            End If
+        End If
 
         System.Diagnostics.Process.Start(githubFileUrl)
     End Sub
@@ -89,7 +97,6 @@ Public Module GitHubMacros
         Return githubRootPath
     End Function
 
-
     Private Function findGitRepoRoot(ByVal filePath As String)
         Dim currentDirectory As String = filePath
 
@@ -109,6 +116,12 @@ Public Module GitHubMacros
         Dim pattern As Match = (From p In patterns Select Regex.Match(remoteUrl, p)).FirstOrDefault(Function(x) x.Success)
         If (pattern Is Nothing) Then Return Nothing
         Return String.Format("http://" & server & "/{0}/{1}", pattern.Groups("username").Value, pattern.Groups("project").Value)
+    End Function
+
+    Private Function GetCurrentLineNumber() As Integer?
+        Dim textDocument As EnvDTE.TextDocument = CType(DTE.ActiveDocument.Object, EnvDTE.TextDocument)
+        If textDocument Is Nothing Then Return Nothing
+        Return textDocument.Selection.ActivePoint.Line
     End Function
 
     Const GitHubServer As String = "github.com"
