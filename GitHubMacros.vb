@@ -64,7 +64,7 @@ Public Module GitHubMacros
 
         Dim githubRootPath As String = findBaseGitHubUrlForLocalRepo(gitRoot)
 
-        Dim branchName As String = "master" 'TODO: discover this
+        Dim branchName As String = findBranchForLocalRepo(gitRoot)
         relativePath = filePath.Substring(gitRoot.Length + 1).Replace("\", "/")
         githubFileUrl = String.Format("{0}/{1}/{2}/{3}", githubRootPath, page, branchName, relativePath)
 
@@ -95,6 +95,11 @@ Public Module GitHubMacros
             Return Nothing
         End If
         Return githubRootPath
+    End Function
+
+    Private Function findBranchForLocalRepo(ByVal gitRoot As String)
+        Dim repo = New GitRepo(gitRoot)
+        Return repo.GetBranch()
     End Function
 
     Private Function findGitRepoRoot(ByVal filePath As String)
@@ -142,6 +147,12 @@ Public Class GitRepo
     Public Function GetRemotes() As IEnumerable(Of Remote)
         parseConfig()
         Return From section In configSections Where section.Kind = "remote" Select New Remote(section.Name, section.Values("url"))
+    End Function
+
+    Public Function GetBranch() As String
+        Dim head As String = File.ReadAllText(Path.Combine(repoFolder, "HEAD")).Trim()
+        Dim match As Match = Regex.Match(head, "^ref: refs/heads/(.*)$")
+        If match.Success Then Return match.Groups(1).Value Else Return "master"
     End Function
 
     Private Sub parseConfig()
