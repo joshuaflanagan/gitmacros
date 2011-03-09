@@ -72,7 +72,7 @@ Public Module GitHubMacros
         If goToLineNumber Then
             Dim lineNumber As Integer? = GetCurrentLineNumber()
             If lineNumber.HasValue Then
-                githubFileUrl &= "#LID" & lineNumber
+                githubFileUrl &= "#LID" & Math.Max(1, lineNumber.Value - 5)
             End If
         End If
 
