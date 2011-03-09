@@ -76,7 +76,7 @@ Public Module GitHubMacros
 
         Dim repo = New GitRepo(gitRoot)
         Dim remotes As String = ""
-        Dim gitHubRemote = (From r In repo.GetRemotes() Where r.Url.Contains("github.com")).FirstOrDefault()
+        Dim gitHubRemote = (From r In repo.GetRemotes() Where r.Url.Contains(GitHubServer)).FirstOrDefault()
         If gitHubRemote Is Nothing Then
             MsgBox("No github remote found")
             Return Nothing
@@ -101,14 +101,17 @@ Public Module GitHubMacros
     End Function
 
     Private Function buildGitHubBaseUrl(ByVal remoteUrl As String)
-        Dim patterns = New String() {"git://github\.com/(?<username>(\w|-)+)/(?<project>(\w|-)+)\.git", _
-                                     "git@github\.com:(?<username>(\w|-)+)/(?<project>(\w|-)+)\.git", _
-                                     "https://(\w|-)+@github\.com/(?<username>(\w|-)+)/(?<project>(\w|-)+)\.git"}
+        Dim server As String = Regex.Escape(GitHubServer)
+        Dim patterns = New String() {"git://" & server & "/(?<username>(\w|-)+)/(?<project>(\w|-)+)\.git", _
+                                     "git@" & server & ":(?<username>(\w|-)+)/(?<project>(\w|-)+)\.git", _
+                                     "https://(\w|-)+@" & server & "/(?<username>(\w|-)+)/(?<project>(\w|-)+)\.git"}
 
         Dim pattern As Match = (From p In patterns Select Regex.Match(remoteUrl, p)).FirstOrDefault(Function(x) x.Success)
         If (pattern Is Nothing) Then Return Nothing
-        Return String.Format("http://github.com/{0}/{1}", pattern.Groups("username").Value, pattern.Groups("project").Value)
+        Return String.Format("http://" & server & "/{0}/{1}", pattern.Groups("username").Value, pattern.Groups("project").Value)
     End Function
+
+    Const GitHubServer As String = "github.com"
 End Module
 
 
