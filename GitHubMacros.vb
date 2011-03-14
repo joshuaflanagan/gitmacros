@@ -120,7 +120,7 @@ Public Module GitHubMacros
 
         Dim pattern As Match = (From p In patterns Select Regex.Match(remoteUrl, p)).FirstOrDefault(Function(x) x.Success)
         If (pattern Is Nothing) Then Return Nothing
-        Return String.Format("http://" & server & "/{0}/{1}", pattern.Groups("username").Value, pattern.Groups("project").Value)
+        Return String.Format("http://" & GitHubServer & "/{0}/{1}", pattern.Groups("username").Value, pattern.Groups("project").Value)
     End Function
 
     Private Function GetCurrentLineNumber() As Integer?
